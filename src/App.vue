@@ -14,7 +14,9 @@ const totalPage = ref(null);
 const currentPage = ref(0);
 const isDisable = ref(false);
 const prevLink = ref(1);
-const nextLink = ref(2);
+const nextLink = ref(3);
+const totalPoke = ref()
+
 
 const getPokeName = (name) => {
   pokemonDetail.value = name;
@@ -27,6 +29,7 @@ const pokemonStore = reactive({
       return pokes.name.includes(filterText.value);
     });
   }),
+  // pokeId: getID(pokemonStore.list)
 });
 
 watchEffect(async () => {
@@ -42,7 +45,6 @@ const pageNav = async (direction) => {
   if (direction === "prev") {
     start.value -= parseInt(perPage.value);
     end.value -= parseInt(perPage.value);
-
     const pokeData = await fetch(
       "https://pokeapi.co/api/v2/pokemon/?offset=" +
         `${start.value}` +
@@ -53,18 +55,16 @@ const pageNav = async (direction) => {
   } else if (direction === "next") {
     start.value += parseInt(perPage.value);
     end.value += parseInt(perPage.value);
-
     const pokeData = await fetch(
       "https://pokeapi.co/api/v2/pokemon/?offset=" +
         `${start.value}` +
         "&limit=" +
         `${perPage.value}`
     ).then((res) => res.json());
-    pokemonStore.list = pokeData.results;
+    pokemonStore.list = pokeData.results
   } else if (!isNaN(direction)) {
-    end.value = direction * perPage.value;
-    start.value = end.value - perPage.value;
-
+    end.value = direction * parseInt(perPage.value)
+    start.value = end.value - parseInt(perPage.value)
     const pokeData = await fetch(
       "https://pokeapi.co/api/v2/pokemon/?offset=" +
         `${start.value}` +
@@ -82,6 +82,7 @@ onMounted(async () => {
   ).then((res) => res.json());
   pokemonStore.list = pokeData.results;
   totalPage.value = Math.ceil(pokeData.count / perPage.value);
+  totalPoke.value = parseInt(pokeData.count)
 });
 </script>
 
@@ -99,9 +100,7 @@ onMounted(async () => {
       <input
         type="text"
         class="form-control"
-        placeholder="Username"
-        aria-label="Username"
-        aria-describedby="addon-wrapping"
+        placeholder="Filter Pokemon"
         v-model="filterText"
       />
     </div>
@@ -109,17 +108,19 @@ onMounted(async () => {
     
     <p >
       Showing
-      {{ pokemonStore.list.length }}
-      from
       {{ start }}
+      from
+      {{ totalPoke }}
     </p>
-
-    <PokeCard 
-      v-for="(pokes, index) in pokemonStore.filteredList"
-      :key="`poke-${index}`"
-      :pokeName="pokes.name"
-      @getName="getPokeName" class="form-control"
-    />
+    <div class="row m-2 " >
+        <PokeCard 
+          v-for="(pokes, index) in pokemonStore.filteredList"
+          :key="`poke-${index}`"
+          :pokeName="pokes.name"
+          :pokeUrl="pokes.url"
+          @getName="getPokeName"
+        />
+    </div>
     <select
       class="form-select"
       v-model="currentPage"
@@ -139,7 +140,7 @@ onMounted(async () => {
             >Previous</a
           >
         </li>
-        <li class="page-item" v-for="index in prevLink" :key="index">
+        <li class="page-item" v-for="index in prevLink" :key="index" @click="pageNav( currentPage - index)">
           <a class="page-link" v-if="currentPage - index > 0">
             {{ currentPage - index }}
           </a>
@@ -150,17 +151,15 @@ onMounted(async () => {
           </a>
           <a class="page-link" v-else>{{ currentPage }}</a>
         </li>
-        <li class="page-item" v-for="index in nextLink" :key="index">
-          <a class="page-link">
+        <li class="page-item" v-for="index in nextLink" :key="index" @click="pageNav(currentPage + index)">
+          <a class="page-link" v-if="index > 1 && currentPage < totalPage">
             {{ currentPage + index }}
           </a>
         </li>
         <li class="page-item">
-          <a
-            class="page-link"
+          <a class="page-link"
             @click="pageNav('next')"
-            v-if="pokemonStore.list.length"
-            >Next</a
+            v-if="currentPage < totalPage"> Next</a
           >
         </li>
       </ul>

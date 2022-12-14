@@ -5,7 +5,7 @@
 <script>
 export default {
     props:[
-        'pokeName'
+        'pokeName','pokeUrl'
     ]
 
 }
