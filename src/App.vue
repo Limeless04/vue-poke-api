@@ -73,7 +73,7 @@ const pageNav = async (direction) => {
     ).then((res) => res.json());
     pokemonStore.list = pokeData.results;
   }
-  currentPage.value = end.value / perPage.value;
+  currentPage.value = Math.ceil(end.value / perPage.value);
 };
 
 onMounted(async () => {
@@ -84,6 +84,7 @@ onMounted(async () => {
   totalPage.value = Math.ceil(pokeData.count / perPage.value);
   totalPoke.value = parseInt(pokeData.count)
 });
+
 </script>
 
 <template>
@@ -94,6 +95,7 @@ onMounted(async () => {
       <option value="5">5 per page</option>
       <option value="10">10 per page</option>
       <option value="20">20 per page</option>
+      <option value="40">40 per page</option>
     </select>
     <div class="input-group flex-nowrap mb-2">
       <span class="input-group-text" id="addon-wrapping">filter</span>

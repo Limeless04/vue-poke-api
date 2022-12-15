@@ -1,9 +1,9 @@
 <template>
-  <div class="col">
-    <div class="card" style="width: 11rem">
+  <div class="col m-2">
+    <div class="card" style="width: 11rem"  @click="$emit('getName', displayName)">
       <img :src="imgUrl + getPokeId + '.png'" />
       <div class="card-body text-center">
-        <h5 class="card-title" @click="$emit('getName', displayName)">
+        <h5 class="card-title">
           {{ displayName }}
         </h5>
       </div>
